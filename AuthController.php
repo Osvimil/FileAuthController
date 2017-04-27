@@ -101,44 +101,42 @@ class AuthController extends Zend_Controller_Action
 	        	   	$obj=new Alumno();
 
 
-/*
 
-$nombre = $_GET["nombre"];
-$apaterno = $_GET["apaterno"];
-$amaterno = $_GET["amaterno"];
-$fecha_nacimiento = $_GET["fecha_nacimiento"];
-$genero = $_GET["genero"];
-*/
 
 //$numero_cuenta = $_GET["cuenta"];
-//----------------------------------------------------------------------------
-//Código sugerido por Memos
-//$url_service = 'https://www.saep.unam.mx/api-2/cep/alumno/'.$num_cuenta;
-//$webSerice = new Zend_Rest_Client($url_service,USUARIO,PASS);
-//----------------------------------------------------------------------------
-$webSerice = new Zend_Rest_Client('https://www.saep.unam.mx/api-2/cep/alumno/501048453');
+
+/*
+$url_webService2 = 'https://www.saep.unam.mx/api-2/cep/alumno/'.$num_cuenta.'/'.$semestre;
+webService concatenando semestre y numero de cuenta
+*/
 
 
-  $usuarioWeb = 'cepsistemas';
-  $contrasenita = 'ZOpU7MFr8vXV7OE6c8cMui71IIYDESFaZ9FAjm18';
+$usuarioWebService= 'cepsistemas'; //Nombre_usuario webService
+$passWebService = 'ZOpU7MFr8vXV7OE6c8cMui71IIYDESFaZ9FAjm18'; //Contrasena WebService
+$url_webService = 'https://www.saep.unam.mx/api-2/cep/alumno/'.$num_cuenta; // URL del webService. Concatenado con el numero de cuenta de los alumnos
 
-  if (($usuarioWeb == 'cepsistemas') && ($contrasenita=='ZOpU7MFr8vXV7OE6c8cMui71IIYDESFaZ9FAjm18')) {
-    $webSerice->arg1('cuenta');
-    $webSerice->arg2('nombre');
-    $webSerice->arg3('apaterno');
-    $webSerice->arg4('amaterno');
-    $webSerice->arg5('fecha_nacimiento');
-    $webSerice->arg6('genero');
-    $webSerice->get();
-    //$webSerice->getHttpClient()->setAuth($usuarioWeb,$contrasenita,Zend_Http_Client::AUTH_BASIC);
-    //
-    $obj=$webSerice;
+
+$webService = new Zend_Rest_Client($url_webService); //Creacion de objeto $webService de la clase Zend_Rest_Client, requiere parametro(la URL)
+
+
+//Se autentifica en setAuth Nombre_usuario y Contrasena del webService
+$webService->getHttpClient()->setAuth($usuarioWebService, $passWebService, Zend_Http_Client::AUTH_BASIC);
+
+  if (($usuarioWebService) && ($passWebService)) {
+    $webService->arg1('cuenta');
+    $webService->arg2('nombre');
+    $webService->arg3('apaterno');
+    $webService->arg4('amaterno');
+    $webService->arg5('fecha_nacimiento');
+    $webService->arg6('genero');
+    $webService->arg7('entidad_academica'); //no viene dato del webService original
+    $werbService->arg8('programa'); // mo viene dato del webService original
+    $webService->get();
   }
-
 	        	   	//$strWhere=" AND substr(plan,1,1)=".$titulo_id{0};
 	        	//}
-
-	    		$Alumno=$obj;
+          $obj=$webService; // Asignacion de los datos del webService al objeto de la clase Alumno()
+	    		$Alumno=$obj;  // Asignacion para mandar valores a los adaptadores del framework
 
 	   	 		$objFecthAlumno=$Alumno->fetchAll('num_cuenta='.(int)$num_cuenta.$strWhere);
 
@@ -148,24 +146,6 @@ $webSerice = new Zend_Rest_Client('https://www.saep.unam.mx/api-2/cep/alumno/501
 
 	            Zend_Loader::loadClass('Zend_Auth_Adapter_DbTable');
 	            $dbAdapter = Zend_Registry::get('db');
-
-              /*
-              //agregado el dia 19/04/17
-              $dNext = $db->fetchRow('SELECT * FROM  alumnos WHERE num_cuenta='.$num_cuenta.'');
-              $arrData = array('alumnos' =>$dNext,
-        							'alumno_id'=>$this->alumno_id,
-        			                'programa'=> $programa,
-        			                'fecha_nacimiento' =>$fecha_nacimiento,
-        			                'sexo' =>$sexo,
-        			                'email' =>$email,
-        			                'licenciatura'=> $licenciatura,
-        			                );
-                              $objCurrentAlumno->insert($arrData);
-
-                //termina lo hecho el dia 19/04/17
-                */
-
-
 	            $authAdapter = new Zend_Auth_Adapter_DbTable($dbAdapter);
 
 
